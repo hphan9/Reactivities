@@ -1,8 +1,6 @@
-import { useState, useEffect, Fragment } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
-
+import {v4 as uuid} from 'uuid'
 
 function App() {
   const [activities, setActivities] = useState<Activity[]>([])
@@ -35,6 +33,17 @@ function App() {
     setEditMode(false);
   }
 
+  function handleCreateOrEditActivity(activity: Activity){
+    activity.id ? setActivities([...activities.filter(x=>x.id != activity.id), activity])
+                : setActivities([...activities, {...activity, id: uuid()}]);
+    setEditMode(false);
+    setSelectedActivity(activity);
+  }
+
+  function handleDeleteActivity(activityId: string){
+    setActivities([...activities.filter(x=>x.id != activityId)])
+  }
+
   return (
     <>
       <NavBar openForm={handleFormOpen}/>
@@ -46,7 +55,9 @@ function App() {
         cancelSelectActivity={handleCancelSelectActivity}
         editMode={editMode}
         openForm={handleFormOpen}
-        closeForm={handleFormClose}/>
+        closeForm={handleFormClose}
+        createOrEdit={handleCreateOrEditActivity}
+        deleteActivity= {handleDeleteActivity}/>
       </Container>
     </>
   )
