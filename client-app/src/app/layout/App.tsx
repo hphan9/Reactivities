@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import {v4 as uuid} from 'uuid'
 
 function App() {
@@ -10,9 +9,13 @@ function App() {
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    axios.get<Activity[]>('http://localhost:5002/api/activities')
-      .then(response => {
-        setActivities(response.data)
+    agent.Activities.list().then(response => {
+        let activities: Activity[] = [];
+        response.forEach((activity: Activity) =>{
+          activity.date = activity.date.split('T')[0];
+          activities.push(activity);
+        })
+        setActivities(response)
       })
   }, [])
 
@@ -66,5 +69,6 @@ import { Container, Header, List } from 'semantic-ui-react'
 import { Activity } from '../Model/activity'
 import NavBar from './NavBar'
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard'
+import agent from '../api/agent';
 
 export default App
