@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, act } from 'react'
 import {v4 as uuid} from 'uuid'
 
 function App() {
@@ -7,7 +7,8 @@ function App() {
   // when we are using states like this, it already knows what type of data we are storing in it because it's inferring it from its usage
 
   const [editMode, setEditMode] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     agent.Activities.list().then(response => {
         let activities: Activity[] = [];
@@ -15,7 +16,8 @@ function App() {
           activity.date = activity.date.split('T')[0];
           activities.push(activity);
         })
-        setActivities(response)
+        setActivities(response);
+        setLoading(false);
       })
   }, [])
 
@@ -37,16 +39,34 @@ function App() {
   }
 
   function handleCreateOrEditActivity(activity: Activity){
-    activity.id ? setActivities([...activities.filter(x=>x.id != activity.id), activity])
-                : setActivities([...activities, {...activity, id: uuid()}]);
-    setEditMode(false);
-    setSelectedActivity(activity);
+  setSubmitting(true);
+   if(activity.id){
+    agent.Activities.update(activity).then(()=>{
+      setActivities([...activities.filter(x=>x.id !== activity.id), activity]);
+      setEditMode(false);
+      setSelectedActivity(activity);
+      setSubmitting(false);
+    })
+   }else{
+    activity.id = uuid();
+    agent.Activities.create(activity).then(()=>{
+      setActivities([...activities,activity]);
+      setEditMode(false);
+      setSelectedActivity(activity);
+      setSubmitting(false);
+    })
+   }
   }
 
   function handleDeleteActivity(activityId: string){
-    setActivities([...activities.filter(x=>x.id != activityId)])
+    setSubmitting(true);
+    agent.Activities.delete(activityId).then(()=>{
+      setActivities([...activities.filter(x=>x.id != activityId)]);
+      setSubmitting(false);
+    })   
   }
-
+  
+  if (loading) return <LoadingComponent content='Loading app'/>
   return (
     <>
       <NavBar openForm={handleFormOpen}/>
@@ -60,7 +80,8 @@ function App() {
         openForm={handleFormOpen}
         closeForm={handleFormClose}
         createOrEdit={handleCreateOrEditActivity}
-        deleteActivity= {handleDeleteActivity}/>
+        deleteActivity= {handleDeleteActivity}
+        submitting={submitting}/>
       </Container>
     </>
   )
@@ -70,5 +91,6 @@ import { Activity } from '../Model/activity'
 import NavBar from './NavBar'
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard'
 import agent from '../api/agent';
+import LoadingComponent from './LoadingComponent';
 
 export default App
