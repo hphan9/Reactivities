@@ -2,6 +2,8 @@ import { useState, useEffect, act } from 'react'
 import {v4 as uuid} from 'uuid'
 
 function App() {
+  const {activityStore} = useStore();
+
   const [activities, setActivities] = useState<Activity[]>([])
   const [selectedActivity, setSelectedActivity] = useState<Activity | undefined>(undefined);
   // when we are using states like this, it already knows what type of data we are storing in it because it's inferring it from its usage
@@ -71,6 +73,7 @@ function App() {
     <>
       <NavBar openForm={handleFormOpen}/>
       <Container style={{marginTop:'7em'}}>
+        <h2>{activityStore.title}</h2>
       <Header as="h2" icon="users" content="Reactivities"></Header>
         <ActivityDashboard activities={activities} 
         selectedActivity = {selectedActivity}
@@ -92,5 +95,6 @@ import NavBar from './NavBar'
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard'
 import agent from '../api/agent';
 import LoadingComponent from './LoadingComponent';
+import { useStore } from '../stores/store';
 
 export default App
