@@ -4,41 +4,16 @@ import {v4 as uuid} from 'uuid'
 function App() {
   const {activityStore} = useStore();
 
-  const [activities, setActivities] = useState<Activity[]>([])
+ 
   const [selectedActivity, setSelectedActivity] = useState<Activity | undefined>(undefined);
   // when we are using states like this, it already knows what type of data we are storing in it because it's inferring it from its usage
 
   const [editMode, setEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [activities, setActivities] = useState<Activity[]>([])
   useEffect(() => {
-    agent.Activities.list().then(response => {
-        let activities: Activity[] = [];
-        response.forEach((activity: Activity) =>{
-          activity.date = activity.date.split('T')[0];
-          activities.push(activity);
-        })
-        setActivities(response);
-        setLoading(false);
-      })
-  }, [])
-
-  function handleSelectedActivity(id: string){
-    setSelectedActivity(activities.find(x=>x.id === id))
-  }
-
-  function handleCancelSelectActivity(){
-    setSelectedActivity(undefined);
-  }
-
-  function handleFormOpen(id?:string){
-    id ? handleSelectedActivity(id) : handleCancelSelectActivity();
-    setEditMode(true);
-  }
-
-  function handleFormClose(){
-    setEditMode(false);
-  }
+    activityStore.loadActivities();
+  }, [activityStore])
 
   function handleCreateOrEditActivity(activity: Activity){
   setSubmitting(true);
@@ -68,20 +43,13 @@ function App() {
     })   
   }
   
-  if (loading) return <LoadingComponent content='Loading app'/>
+  if (activityStore.loadingInitial) return <LoadingComponent content='Loading app'/>
   return (
     <>
-      <NavBar openForm={handleFormOpen}/>
+      <NavBar/>
       <Container style={{marginTop:'7em'}}>
-        <h2>{activityStore.title}</h2>
       <Header as="h2" icon="users" content="Reactivities"></Header>
-        <ActivityDashboard activities={activities} 
-        selectedActivity = {selectedActivity}
-        selectActivity ={handleSelectedActivity} 
-        cancelSelectActivity={handleCancelSelectActivity}
-        editMode={editMode}
-        openForm={handleFormOpen}
-        closeForm={handleFormClose}
+        <ActivityDashboard activities={activityStore.activities} 
         createOrEdit={handleCreateOrEditActivity}
         deleteActivity= {handleDeleteActivity}
         submitting={submitting}/>
@@ -89,12 +57,13 @@ function App() {
     </>
   )
 }
-import { Container, Header, List } from 'semantic-ui-react'
+import { Button, Container, Header, List } from 'semantic-ui-react'
 import { Activity } from '../Model/activity'
 import NavBar from './NavBar'
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard'
 import agent from '../api/agent';
 import LoadingComponent from './LoadingComponent';
 import { useStore } from '../stores/store';
+import { observer } from 'mobx-react-lite';
 
-export default App
+export default observer(App)
