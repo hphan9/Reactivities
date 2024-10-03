@@ -5,7 +5,7 @@ import ActivityList from './ActivityList';
 import ActivityDetails from '../details/ActivityDetails';
 import ActivityForm from '../form/ActivityForm';
 import { useStore } from '../../../app/stores/store';
-
+import { observer } from 'mobx-react-lite';
 interface Props{
     activities: Activity[],
     createOrEdit:(activity: Activity)=>void;
@@ -13,9 +13,9 @@ interface Props{
     submitting:boolean,
 }
   
-function ActivityDashboard({activities, createOrEdit, deleteActivity, submitting}:Props){
-    const {activityStore} = useStore();
-    const {selectedActivity, editMode} = activityStore;
+export default observer(function ActivityDashboard({activities, createOrEdit, deleteActivity, submitting}:Props){
+    const { activityStore} = useStore();
+    const { selectedActivity, editMode} = activityStore;
     return(
         <Grid>
             <Grid.Column width='10'>
@@ -27,7 +27,5 @@ function ActivityDashboard({activities, createOrEdit, deleteActivity, submitting
             </Grid.Column>
         </Grid>
     )
-}
-
-export default ActivityDashboard;
+})
 

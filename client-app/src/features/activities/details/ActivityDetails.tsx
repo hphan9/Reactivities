@@ -4,10 +4,13 @@ import { Activity } from "../../../app/Model/activity";
 import ActivityForm from "../form/ActivityForm";
 import { useStore } from "../../../app/stores/store";
 
+interface Props{
+    selectedActivity: Activity
+}
 
 export default function ActivityDetails() {
     const {activityStore} = useStore();
-    const {selectedActivity: activity, cancelSelectedActivity, openForm} = activityStore
+    const { selectedActivity:activity, cancelSelectedActivity, openForm} = activityStore
     if(!activity) return; 
     return (
         <Card fluid>
