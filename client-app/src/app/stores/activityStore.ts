@@ -20,6 +20,7 @@ export default class ActivityStore {
     }
 
     loadActivities = async () =>{
+        this.setloadingInitial(true);
         try{
             const activities = await agent.Activities.list();
 
@@ -35,25 +36,32 @@ export default class ActivityStore {
             this.setloadingInitial(false);
         }
     }
+ 
+   loadActivity = async (id:string) =>{
+        let activity = this.activityRegistry.get(id);
+        if(activity){
+            this.selectedActivity = activity;
+        }else{
+            this.loadingInitial = true;
+            try{
+                let activity = await agent.Activities.details(id);
+                this.setActivity(activity);
+                this.selectedActivity= activity;
+                this.setloadingInitial(false);
+            }catch(error){
+                console.log(error); 
+                this.setloadingInitial(false);
+            }
 
+        }
+   }
+
+   private setActivity = (activity:Activity) =>{
+        activity.date = activity.date.split('T')[0];
+        this.activityRegistry.set(activity.id, activity);
+   }
    setloadingInitial = (state:boolean)=> this.loadingInitial = state;
 
-   selectActivity = (id:string) =>{
-    this.selectedActivity = this.activityRegistry.get(id);
-   }
-
-   cancelSelectedActivity = () =>{
-    this.selectedActivity = undefined;
-   }
-
-   openForm = (id?:string) =>{
-        id ? this.selectActivity(id) : this.cancelSelectedActivity();
-        this.editMode = true;
-   }
-
-   closeForm =()=>{
-    this.editMode = false;
-   }
    createOrEditActivity = async (activity: Activity) =>{
     this.submitting = true;
     try{
